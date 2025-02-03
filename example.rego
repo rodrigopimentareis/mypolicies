@@ -31,6 +31,6 @@ allow if {
 
 # API key to role mapping
 api_key_roles := {
-	"valid-api-key": "viewer", # API key for the viewer role
-	"admin-api-key": "admin", # API key for the admin role
+	"invalid-api-key": "viewer", # API key for the viewer role
+	"valid-api-key": "admin", # API key for the admin role
 }
