@@ -2,34 +2,35 @@ package example
 
 import rego.v1
 
+# Default deny
+default allow := false
+
+default allow_api_key := false
+
 # Define roles and their permissions
 roles := {
-	"admin": {"permissions": ["read_users", "write_users", "delete_users"]},
-	"viewer": {"permissions": ["read_users"]}
+	"admin": {"permissions": ["read_users", "write_users"]},
+	"viewer": {"permissions": ["read"]},
+}
+
+# API key validation
+allow_api_key if {
+	api_key_roles[input.api_key]
+}
+
+# Main allow rule (only runs if API key is valid)
+allow if {
+	# First verify API key and get role
+	role := api_key_roles[input.api_key]
+
+	# Check if the requested permission exists for the role
+	role_permissions := roles[role].permissions
+	permission := input.permission
+	permission == role_permissions[_]
 }
 
 # API key to role mapping
 api_key_roles := {
-	"valid-api-key": "viewer",
-	"admin-api-key": "admin"
-}
-
-# Check if API key exists
-valid_api_key := api_key_roles[input.api_key]
-
-# Authentication Response: Check if API key exists
-auth_response := {
-	"valid": valid_api_key != null,
-	"role": valid_api_key
-}
-
-# Authorization Response: Check if the role has permission
-allow := permission == roles[valid_api_key].permissions[_] if {
-	permission := input.permission
-	valid_api_key != null
-}
-
-authz_response := {
-	"allow": allow,
-	"role": valid_api_key
+	"valid-api-key": "viewer", # API key for the viewer role
+	"admin-api-key": "admin", # API key for the admin role
 }
